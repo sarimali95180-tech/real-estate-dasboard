@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Landing Page</title>
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- links for map  -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- NAVBAR -->
+        <header class="header">
+            <nav class="navbar">
+                <div class="brand">
+                    <h2 class="brand-logo">Real Estate</h2>
+                </div>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="number" id="navMenu">
+                    <h3><i class="fa-solid fa-phone"></i> +1 (555) 123-4567</h3>
+                    <div> <a href="../admin/property.php" class="backbutton"><button class="btn">Back</button></a></div>
+                    <!-- <div> <button class="btn">Schedule Visit</button></div> -->
+                </div>
+            </nav>
+            <!-- HERO SECTION -->
+            <div class="hero">
+                <h1>Find Your Dream Property</h1>
+                <p>Discover luxury homes, modern apartments, and charming properties in prime locations. Let us help you
+                    find the perfect place to call home.</p>
+
+                <!-- NEWSLETTER -->
+                <div class="newsletter">
+                    <div class="newsletter-box">
+                        <input type="text" id="searchInput"
+                            placeholder="Search by location, property type, or keyword...">
+                        <button id="searchBtn" class="search">Search Properties</button>
+                        <div id="searchDropdown" class="dropdown"></div>
+                    </div>
+
+                </div>
+
+                <!-- Blocks  -->
+                <div class="block">
+                    <div class="block-1">
+                        <h1 id="propertyCount" class="count" data-start="0" data-end="2500" data-duration="1500"
+                            data-format="commas">
+                            0
+                        </h1>
+                        <p>Properties Listed</p>
+                    </div>
+
+                    <div class="block-1">
+                        <h1 id="userCount" class="count" data-start="0" data-end="750" data-duration="1500"
+                            data-format="commas">
+                            0
+                        </h1>
+                        <p>Users Listed</p>
+                    </div>
+
+
+
+                    <!-- <div class="block-1">
+                    <h1>15+</h1>
+                    <p>Years Experience</p>
+                </div> -->
+                </div>
+
+            </div>
+        </header>
+
+        <!-- Featured-Properties section  -->
+
+
+        <!-- PROPERTY CARDS -->
+        <section class="property-slider-wrap">
+            <h2>Featured Properties</h2>
+            <h3>Explore our handpicked selection of premium properties available now. From luxury apartments to family
+                homes, find your perfect match.</h3>
+
+            <div class="property-slider-container">
+                <button class="ps-nav ps-prev">&#10094;</button>
+                <div class="property-slider" style="padding: 10px 0;">
+                    <div class="property-track" id="propertiesList">
+                        <!-- Dynamic property cards will be loaded here -->
+                    </div>
+                </div>
+                <button class="ps-nav ps-next">&#10095;</button>
+            </div>
+        </section>
+
+
+        <!-- Choose  Section  -->
+        <section class="choose">
+            <h2>Why Choose Real Estate</h2>
+            <h3>We're committed to providing exceptional service and helping you find the perfect property that meets
+                all
+                your needs.</h3>
+            <div class="choose-blocks">
+
+                <!-- div.choose-block -->
+                <div class="choose-block">
+                    <div class="block-icon">
+                        <i class="fa-solid fa-magnifying-glass" style="color: white;"></i>
+                    </div>
+                    <div class="block-content">
+                        <h4>Wide Selection</h4>
+                        <p>Access to hundreds of properties across various locations and price ranges.</p>
+                    </div>
+                </div>
+
+                <div class="choose-block">
+                    <div class="block-icon">
+                        <img src="./images/Vector (5).png" alt="2">
+                    </div>
+                    <div class="block-content">
+                        <h4>Trusted Service</h4>
+                        <p>15+ years of experience in real estate with thousands of satisfied clients.</p>
+                    </div>
+                </div>
+
+                <div class="choose-block">
+                    <div class="block-icon">
+                        <img src="./images/Vector (6).png" alt="3">
+                    </div>
+                    <div class="block-content">
+                        <h4>Expert Agents</h4>
+                        <p>Professional agents dedicated to finding your perfect property match.</p>
+                    </div>
+                </div>
+
+                <div class="choose-block">
+                    <div class="block-icon">
+                        <img src="./images/Frame (16).png" alt="4">
+                    </div>
+                    <div class="block-content">
+                        <h4>Premium Quality</h4>
+                        <p>Only the finest properties that meet our strict quality standards.</p>
+                    </div>
+                </div>
+
+                <div class="choose-block">
+                    <div class="block-icon">
+                        <img src="./images/Vector (7).png" alt="5">
+                    </div>
+                    <div class="block-content">
+                        <h4>Personalized Support</h4>
+                        <p>Tailored assistance throughout your entire property journey.</p>
+                    </div>
+                </div>
+
+                <div class="choose-block">
+                    <div class="block-icon">
+                        <img src="./images/Vector (8).png" alt="6">
+                    </div>
+                    <div class="block-content">
+                        <h4>Market Insights</h4>
+                        <p>Expert knowledge of market trends and property valuations.</p>
+                    </div>
+                </div>
+
+
+            </div>
+        </section>
+
+
+        <!-- Clients Section  -->
+        <section class="clients">
+            <h2>What Our Clients Say</h2>
+            <h3>Don't just take our word for it. Here's what our satisfied clients have to say about their experience
+                with
+                us.</h3>
+
+            <div class="clients-cards">
+
+                <div class="client-card">
+                    <div class="client-card-icon">
+                        <div class="stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="quote-right">
+                            <i class="fa-solid fa-quote-right" style="font-size: 19px;"></i>
+                        </div>
+                    </div>
+                    <p>"Real Estate helped us find our dream home in just 2 weeks! The team was professional,
+                        knowledgeable,
+                        and made the entire process seamless. Highly recommended!"</p>
+                    <div class="user">
+                        <div class="user-img">
+                            <img src="./images/card1.jpg" alt="">
+                        </div>
+                        <div class="user-content">
+                            <h4>Sarah Johnson</h4>
+                            <p>Happy Homeowner</p>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="client-card">
+                    <div class="client-card-icon">
+                        <div class="stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="quote-right">
+                            <i class="fa-solid fa-quote-right" style="font-size: 19px;"></i>
+                        </div>
+                    </div>
+                    <p>"I've worked with several real estate companies, but this team stands out. Their market insights
+                        and
+                        personalized service helped me make smart investment decisions."</p>
+                    <div class="user">
+                        <div class="user-img">
+                            <img src="./images/card2.jpg" alt="2">
+                        </div>
+                        <div class="user-content">
+                            <h4>Michael Brown</h4>
+                            <p>Property Investor</p>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="client-card">
+                    <div class="client-card-icon">
+                        <div class="stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="quote-right">
+                            <i class="fa-solid fa-quote-right" style="font-size: 19px;"></i>
+                        </div>
+                    </div>
+                    <p>"As a first-time buyer, I was nervous about the process. The agents at Real Estate guided me
+                        every
+                        step of the way and found me the perfect starter home within my budget."</p>
+                    <div class="user">
+                        <div class="user-img">
+                            <img src="./images/card3.jpg" alt="3">
+                        </div>
+                        <div class="user-content">
+                            <h4>Emily Davis</h4>
+                            <p>First-Time Buyer</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Find Section -->
+        <section class="find">
+            <div class="find-content">
+                <h3>Ready to Find Your Dream Home?</h3>
+                <p>Let our expert team guide you through every step of your property journey. Contact us today for a
+                    personalized consultation.</p>
+                <div class="find-btns">
+                    <div class="find-btn-1">
+                        <button><i class="fa-solid fa-phone"></i> Call Us Now</button>
+                        <p><i class="fa-solid fa-phone"></i> +1 (555) 123-4567</p>
+                    </div>
+                    <div class="find-btn-1">
+                        <button><img src="./images/mail.png" alt="mail"> Email Us</button>
+                        <p><img src="./images/mail.png" alt="mail"> contact@realestate.com</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Property Details Modal -->
+        <div id="propertyModal" class="modal">
+            <div class="modal-content">
+                <div class="property-detail-nav">
+                    <h3>Property Details</h3><span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-image">
+                        <img id="modalPropertyImage" src="" alt="property">
+                    </div>
+                    <div class="modal-details">
+                        <div class="modal-location-flex">
+                            <div>
+                                <div class="modal-location">
+                                    <h4 id="modalPropertyType"></h4>
+                                    <h4 id="modalPropertyLocation"></h4>
+                                </div>
+                                <h2 id="modalPropertyTitle"></h2>
+                            </div>
+                            <div class="info-item">
+                                <span id="modalPrice" class="price"></span>
+                            </div>
+                        </div>
+                        <div class="modal-info">
+                            <div class="info-item">
+                                <i class="fa-solid fa-bed"></i>
+                                <p></p>
+                                <span id="modalcategory"></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa-solid fa-shower"></i>
+                                <span id="modalBathrooms"></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa-solid fa-ruler"></i>
+                                <span id="modalSize"></span>
+                            </div>
+
+                        </div>
+                        <!-- <h3>Description</h3> -->
+                        <p id="modalPropertyDescription"></p>
+
+                        <!-- <h3>Key Features</h3> -->
+                        <p id="modalPropertyKeyFeatures" style="overflow-wrap: anywhere; "></p>
+
+                        <div id="modalMap"></div>
+
+
+                        <div class="modal-actions">
+                            <!-- <button class="modal-btn btn">Schedule Viewing</button> -->
+                            <a id="contactBtn" class="modal-btn btn">Contact Agent</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer section  -->
+        <footer class="footer">
+            <div class="footer-top">
+
+                <div class="footer-1 footer-about">
+                    <h4>Real Estate</h4>
+                    <p>Your trusted partner in finding the perfect property. With over 15 years of experience, we're
+                        here to
+                        help you every step of the way.</p>
+                </div>
+
+                <div class="footer-1">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-ul">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Team</a></li>
+                        <li><a href="#">Services</a></li>
+                        <li><a href="#">Testimonials</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-1">
+                    <h4>Property Types</h4>
+                    <ul class="footer-ul">
+                        <li><a href="#">Apartments</a></li>
+                        <li><a href="#">Family Homes</a></li>
+                        <li><a href="#">Luxury Villas</a></li>
+                        <li><a href="#">Commercial</a></li>
+                        <li><a href="#">Land & Plots</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-1">
+                    <h4>Contact Us</h4>
+                    <p>123 Real Estate Ave <br> New York, NY 10001 </p>
+                    <p><i class="fa-solid fa-phone"></i> +1 (555) 123-4567</p>
+                    <p><img src="./images/mail.png" alt="mail"> contact@realestate.com</p>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2024 Real Estate. All rights reserved.</p>
+                <div class="footer-bottom-a">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Cookie Policy</a>
+                </div>
+            </div>
+        </footer>
+
+
+
+    </div>
+
+    <script src="./js/script.js"></script>
+
+    <!-- <script>
+        document.querySelectorAll(".contact-btn").forEach(btn => {
+            let id = btn.getAttribute("data-id");
+            btn.href = `contact.html?id=${id}`;
+        });
+
+    </script> -->
+
+</body>
+
+</html>

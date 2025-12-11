@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .autocomplete-suggestions {
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            background: #fff;
+            width: 300px;
+            z-index: 1000;
+        }
+        .autocomplete-suggestion {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .autocomplete-suggestion:hover {
+            background: #f0f0f0;
+        }
+        input { width: 300px; padding: 8px; }
+    </style>
+<body>
+    <h2>Search Location</h2>
+<input type="text" id="locationInput" placeholder="Type location...">
+<div id="suggestions" class="autocomplete-suggestions"></div>
+
+<script>
+    const input = document.getElementById("locationInput");
+const suggestionsDiv = document.getElementById("suggestions");
+
+let timeout = null;
+
+input.addEventListener("input", function() {
+    const query = this.value.trim();
+    
+    // Clear previous suggestions
+    suggestionsDiv.innerHTML = "";
+
+    if (query.length < 2) return; // Start searching after 2 chars
+
+    // Debounce to reduce API calls
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+        fetch(`your-api.php?location=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200 && data.suggestions.length > 0) {
+                    data.suggestions.forEach(item => {
+                        const div = document.createElement("div");
+                        div.classList.add("autocomplete-suggestion");
+                        div.textContent = item.name;
+                        div.dataset.lat = item.latitude;
+                        div.dataset.lon = item.longitude;
+
+                        div.addEventListener("click", () => {
+                            input.value = item.name;
+                            console.log("Selected coordinates:", item.latitude, item.longitude);
+                            suggestionsDiv.innerHTML = "";
+                        });
+
+                        suggestionsDiv.appendChild(div);
+                    });
+                }
+            })
+            .catch(err => console.error(err));
+    }, 300); // Delay 300ms
+});
+
+// Close suggestions when clicking outside
+document.addEventListener("click", function(e) {
+    if (!input.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+        suggestionsDiv.innerHTML = "";
+    }
+});
+
+</script>
+</body>
+</html>

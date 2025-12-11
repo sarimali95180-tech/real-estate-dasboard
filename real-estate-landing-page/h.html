@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Number Counting Animation</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --accent: #7dd3fc;
+    --muted:#9aa5b1;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,var(--bg),#071023);
+    color:#e6eef6;
+    padding:40px;
+    box-sizing:border-box;
+  }
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+    padding:28px;
+    border-radius:16px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    min-width:320px;
+    text-align:center;
+  }
+  .label{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .count{
+    font-weight:700;
+    font-size:48px;
+    letter-spacing: -0.02em;
+    display:inline-block;
+    padding:8px 14px;
+    border-radius:10px;
+    background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(125,211,252,0.02));
+    color: white;
+    min-width:160px;
+  }
+  .meta{margin-top:12px;color:var(--muted);font-size:13px}
+  /* small responsive */
+  @media (max-width:420px){
+    .count{font-size:36px;min-width:120px}
+  }
+</style>
+</head>
+<body>
+<div class="block-1">
+    <h1 id="propertyCount"
+        class="count"
+        data-start="0"
+        data-end="2500"
+        data-duration="1500"
+        data-format="commas">
+        0
+    </h1>
+    <p>Properties Listed</p>
+</div>
+
+<div class="block-1">
+    <h1 id="userCount"
+        class="count"
+        data-start="0"
+        data-end="750"
+        data-duration="1500"
+        data-format="commas">
+        0
+    </h1>
+    <p>Users Listed</p>
+</div>
+
+
+<script>
+(function(){
+  const easing = {
+    linear: t => t,
+    easeOutCubic: t => 1 - Math.pow(1 - t, 3),
+  };
+
+  function formatNumber(n, mode) {
+    return mode === 'commas' ? n.toLocaleString() : String(n);
+  }
+
+  function animateCount(el, opts = {}) {
+    const start = Number(opts.start || 0);
+    const end = Number(opts.end || 0);
+    const duration = Number(opts.duration || 1000);
+    const fmt = opts.format || "plain";
+    const ease = easing[opts.easing] || easing.easeOutCubic;
+
+    const startTime = performance.now();
+
+    function frame(now) {
+      const progress = Math.min(1, (now - startTime) / duration);
+      const value = start + (end - start) * ease(progress);
+      el.textContent = formatNumber(Math.round(value), fmt);
+
+      if (progress < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        el.textContent = formatNumber(end, fmt);
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  function initCounters() {
+    document.querySelectorAll('.count').forEach(el => {
+      animateCount(el, {
+        start: el.dataset.start,
+        end: el.dataset.end,
+        duration: el.dataset.duration,
+        format: el.dataset.format,
+        easing: el.dataset.easing
+      });
+    });
+  }
+
+  // Start animation when page loads
+  window.addEventListener("DOMContentLoaded", initCounters);
+})();
+</script>
+
+</body>
+</html>
