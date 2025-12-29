@@ -1,17 +1,13 @@
 <?php
-session_start();
+require_once 'auth.php';
 
-// Check if session exists
-if (!isset($_SESSION['username'])) {
-    header("Location: ../pages/login.php");
+// only admin allowed
+if ($role !== 'admin') {
+    header("Location: property.php");
     exit;
 }
-
-// Set session validation token
-if (!isset($_SESSION['page_token'])) {
-    $_SESSION['page_token'] = md5(uniqid(rand(), true));
-}
 ?>
+
 
 
 <!DOCTYPE html>
@@ -28,6 +24,7 @@ if (!isset($_SESSION['page_token'])) {
 
     <!-- css style   -->
     <link rel="stylesheet" href="./style.css">
+    <!-- <link rel="stylesheet" href="../real-estate-landing-page/css/style.css"> -->
 
     <!-- toster links   -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -47,15 +44,9 @@ if (!isset($_SESSION['page_token'])) {
     <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 2000;"></div>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div>
-            <h4>Real Estate</h4>
-            <a href="index.php" class="active"><img src="./images/Vector1.png" alt="1">Users</a>
-            <a href="property.php"><img src="./images/Vector2.png" alt="2">Add Properties</a>
-            <a href="./lead.html"><i class="fa-solid fa-circle-user"
-                    style="padding-right:20px;"></i>Leads</a>
+    <?php require_once 'sidebar.php'; ?>
+    <!-- <div class="sidebar">
 
-        </div>
 
         <div>
             <div>
@@ -65,14 +56,20 @@ if (!isset($_SESSION['page_token'])) {
                 <a href="../pages/logout.php" class="btn btn-danger">Logout</a>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div class="main-contents">
         <!-- Top Navbar -->
         <div class="topbar">
             <h5 class="m-0" style="color:#2F3A4A;">Property Dashboard</h5>
-        </div>
+            <button id="sidebarToggle" class="hamburger d-lg-none">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
+
+        </div>
     </div>
 
 
@@ -91,10 +88,19 @@ if (!isset($_SESSION['page_token'])) {
             </div>
         </div>
 
+
+        <div class="crm-search-box">
+            <input type="text" id="search-users" placeholder="Search users..." class="form-control">
+            <div id="searchDropdown" class="dropdown"></div>
+        </div>
+
+
+
         <div class="table-responsive bg-white rounded shadow-sm">
             <table class="table table-striped align-middle mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th style="background-color: white;">S.No</th>
                         <th style="background-color: white;">Full Name</th>
                         <th style="background-color: white;">Username</th>
                         <th style="background-color: white;">Email</th>
@@ -107,6 +113,22 @@ if (!isset($_SESSION['page_token'])) {
 
                 </tbody>
             </table>
+
+        </div>
+
+        <div class="lead-pagi mb-2">
+            <nav class="mt-3">
+                <ul class="pagination" id="UserPagination"></ul>
+            </nav>
+            <div style="display: flex; align-items: center;">
+                <label class="me-2 fw-semibold">Rows per page:</label>
+                <select id="pageLimit" class="form-select w-auto">
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
         </div>
 
 
@@ -133,21 +155,34 @@ if (!isset($_SESSION['page_token'])) {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control" placeholder="abc@gmail.com" id="email" required>
+                            <input type="email" class="form-control" id="email" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                                placeholder="abc@gmail.com" required>
                         </div>
                         <div class="mb-3 position-relative">
                             <label class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="12345678" required>
+                            <input type="password" class="form-control" id="password" minlength="5"
+                                placeholder="12345678" required>
                             <i class="fa fa-eye position-absolute" id="togglePassword"
                                 style="top: 47px; right: 15px; cursor: pointer; color: #666;"></i>
                         </div>
                         <div class="mb-3 position-relative">
                             <label class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" placeholder="12345678"
-                                required>
+                            <input type="password" class="form-control" id="confirmPassword" minlength="5"
+                                placeholder="12345678" required>
+
                             <i class="fa fa-eye position-absolute" id="toggleConfirmPassword"
                                 style="top: 47px; right: 15px; cursor: pointer; color: #666;"></i>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select name="role" id="role" class="form-select" required>
+                                <option value="">Select Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="agent">Agent</option>
+                            </select>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">Status</label>
                             <select class="form-select" id="status">
@@ -155,33 +190,66 @@ if (!isset($_SESSION['page_token'])) {
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="saveUser">Save</button>
+                        </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveUser">Save</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ===== USER DETAIL MODAL ===== -->
+    <div id="userModal" class="user-modal">
+        <div class="user-modal-content">
+            <div class="user-modal-header">
+                <h2 id="modalUserName">User Name</h2>
+                <span class="close" onclick="closeUserModal()">&times;</span>
+            </div>
 
+            <div class="user-modal-body">
+                <div class="user-detail-section">
+                    <div class="detail-row">
+                        <span class="detail-label">Full Name:</span>
+                        <span class="detail-value" id="modalUserFullName">-</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Username:</span>
+                        <span class="detail-value" id="modalUserUsername">-</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value" id="modalUserEmail">-</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Role:</span>
+                        <span class="detail-value" id="modalUserRole">-</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value" id="modalUserStatus">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-modal-footer">
+                <button class="modal-btn btn btn-secondary" onclick="closeUserModal()">Close</button>
+                <button class="modal-btn btn btn-primary" onclick="editUserFromModal()">Edit User</button>
+            </div>
+        </div>
+    </div>
+    
+
+    <script src="./api-config.js"></script>
     <script src="./script.js"></script>
 
-    <script>
-        // Display login success toast if set
-        <?php if (isset($_SESSION['login_success'])): ?>
-            Toastify({
-                text: "<?php echo htmlspecialchars($_SESSION['login_success']); ?>",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#28a745",
-                close: true,
-            }).showToast();
-            <?php unset($_SESSION['login_success']); ?>
-        <?php endif; ?>
-    </script>
+
+
 </body>
 
 </html>

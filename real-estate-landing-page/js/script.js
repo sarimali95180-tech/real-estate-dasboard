@@ -1,5 +1,81 @@
 // js for the navbar responsive button //
 const base_url = "http://localhost";
+const fetchURL = `${base_url}/real_estate_dashboard/admin/get-properties.php`;
+const searchURL = `${base_url}/real_estate_dashboard/real-estate-landing-page/search.php`;
+const getPropertyByIdURL = `${base_url}/real_estate_dashboard/admin/get-property-by-id.php`;
+const countURL = `${base_url}/real_estate_dashboard/real-estate-landing-page/count-api.php`;
+
+let propertyData = {};
+
+// ====== SCROLL ANIMATION OBSERVER ======
+// Intersection Observer to trigger animations on scroll
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: "0px 0px -100px 0px"
+};
+
+const animationObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      // Add animation classes
+      if (entry.target.classList.contains('property-box')) {
+        entry.target.style.animation = 'fadeInUp 0.7s ease-out forwards';
+      } else if (entry.target.classList.contains('choose-block')) {
+        entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+      } else if (entry.target.classList.contains('client-card')) {
+        entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+      } else if (entry.target.classList.contains('property-slider-wrap')) {
+        entry.target.style.animation = 'fadeInUp 0.9s ease-out forwards';
+      }
+      animationObserver.unobserve(entry.target);
+    }
+  });
+}, observerOptions);
+
+// Function to observe elements for scroll animations
+function observeElements() {
+  // Observe property boxes
+  document.querySelectorAll('.property-box').forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.animationDelay = (index * 0.1) + 's';
+    animationObserver.observe(el);
+  });
+
+  // Observe choose blocks
+  document.querySelectorAll('.choose-block').forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.animationDelay = (index % 3) * 0.1 + 's';
+    animationObserver.observe(el);
+  });
+
+  // Observe client cards
+  document.querySelectorAll('.client-card').forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.animationDelay = (index * 0.1) + 's';
+    animationObserver.observe(el);
+  });
+
+  // Observe sections
+  const propertySlider = document.querySelector('.property-slider-wrap');
+  const findSection = document.querySelector('.find');
+  const footerSection = document.querySelector('.footer');
+
+  if (propertySlider) {
+    propertySlider.style.opacity = '0';
+    animationObserver.observe(propertySlider);
+  }
+  if (findSection) {
+    findSection.style.opacity = '0';
+    animationObserver.observe(findSection);
+  }
+  if (footerSection) {
+    footerSection.style.opacity = '0';
+    animationObserver.observe(footerSection);
+  }
+}
+
+///////
+
 // Hamburger Menu Toggle
 const hamburger = document.getElementById("hamburger");
 const navMenu = document.getElementById("navMenu");
@@ -26,13 +102,11 @@ document.addEventListener("click", function (event) {
   }
 });
 ////////////////
+// js to fetch data from the real_estate_dashboard where we enter property details 
+// fetch property data from API 
 
-// js to fetch data from the real_estate_dashboard where we enter property datails  //
-// Fetch property data from API
-const fetchURL = `${base_url}/real_estate_dashboard/admin/get-properties.php`;
-let propertyData = {};
+// const fetchURL = `${base_url}/real_estate_dashboard/admin/get-properties.php`;
 
-///////
 
 // function to fetch data from the API //
 async function fetchPropertyData() {
@@ -41,38 +115,38 @@ async function fetchPropertyData() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json();
 
-    console.log("data coming from api", data);
+    const res = await response.json();
+    console.log("data coming from api", res);
 
-    // Transform API response to match our format
-    if (!data) {
-      console.log("no data from api");
+    // RESET before filling
+    propertyData = {};
+
+    if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
+      console.log("No properties found");
+      return;
     }
-    data.forEach((property, index) => {
-      propertyData[index + 1] = {
-        id: property.id || index + 1,
-        title: property.title || property.name || property.property_name || "",
-        type: property.property_type || property.type || "Property",
-        location: property.location || property.city || "Location",
-        image:
-          property.image_url || property.image || "./images/property-3.jpg",
+
+    // ✅ USE res.data
+    res.data.forEach((property, index) => {
+      propertyData[index] = {
+        id: property.id,
+        title: property.title || "",
+        type: property.property_type || "Property",
+        location: property.location || "Location",
         image:
           property.thumbnail ||
           property.image_url ||
           property.image ||
           "./images/property-3.jpg",
-        description: property.description || property.details || "",
-        features: property.content || property.key_features || "",
+        description: property.description || "",
+        features: property.content || "",
         bedrooms: property.category ? `${property.category} - Bedrooms` : "N/A",
-
         bathrooms: property.bathroom
           ? `${property.bathroom} - Bathrooms`
           : "N/A",
-        size:
-          property.size || property.area
-            ? `${property.size || property.area} sq ft`
-            : "N/A",
+        size: property.area ? `${property.area} sq ft` : "N/A",
+        calender: property.created_at || "N/A",
         price: property.price
           ? `$${Number(property.price).toLocaleString()}`
           : "Contact for price",
@@ -82,18 +156,22 @@ async function fetchPropertyData() {
     });
 
     console.log("Fetched property data:", propertyData);
+
+    // 1️⃣ Render cards first
     renderPropertyCards();
+
+    // 2️⃣ Attach modal listeners
     attachViewDetailsListeners();
-    setTimeout(setupCarouselControls());
+
+    // 3️⃣ THEN setup slider (after DOM is ready)
+    setTimeout(() => {
+      setupCarouselControls();
+    }, 100);
   } catch (error) {
     console.error("Error fetching property data:", error);
-    console.log("Using fallback property data");
-    // propertyData = fallbackPropertyData;
-    renderPropertyCards();
-    attachViewDetailsListeners();
-    setTimeout(setupCarouselControls());
   }
 }
+
 /////////
 
 // js that renders the property cards dynamically maintain the cards formate//
@@ -167,41 +245,42 @@ function attachViewDetailsListeners() {
         document.getElementById("modalBathrooms").textContent =
           property.bathrooms;
         document.getElementById("modalSize").textContent = property.size;
+        document.getElementById("modalCalender").textContent =
+          property.calender;
         document.getElementById("modalPrice").textContent = property.price;
 
         // Show modal first
-modal.style.display = "block";
+        modal.style.display = "block";
 
-// Clear any existing map instance
-if (window.modalMapInstance) {
-  window.modalMapInstance.remove();
-}
+        // Clear any existing map instance
+        if (window.modalMapInstance) {
+          window.modalMapInstance.remove();
+        }
 
-// Get latitude and longitude from property
-const lat = parseFloat(property.latitude);
-const lng = parseFloat(property.longitude);
+        // Get latitude and longitude from property
+        const lat = parseFloat(property.latitude);
+        const lng = parseFloat(property.longitude);
 
-// Initialize Leaflet map in modal
-if (!isNaN(lat) && !isNaN(lng)) {
-  window.modalMapInstance = L.map("modalMap").setView([lat, lng], 15);
+        // Initialize Leaflet map in modal
+        if (!isNaN(lat) && !isNaN(lng)) {
+          window.modalMapInstance = L.map("modalMap").setView([lat, lng], 15);
 
-  // Add OpenStreetMap tiles
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-  }).addTo(window.modalMapInstance);
+          // Add OpenStreetMap tiles
+          L.tileLayer(API_CONFIG.OPENSTREETMAP_TILE_URL, {
+            maxZoom: API_CONFIG.OPENSTREETMAP_MAX_ZOOM,
+          }).addTo(window.modalMapInstance);
 
-  // Add marker
-  L.marker([lat, lng])
-    .addTo(window.modalMapInstance)
-    .bindPopup(`<b>${property.title}</b><br>${property.location}`)
-    .openPopup();
+          // Add marker
+          L.marker([lat, lng])
+            .addTo(window.modalMapInstance)
+            .bindPopup(`<b>${property.title}</b><br>${property.location}`)
+            .openPopup();
 
-  // Fix map rendering in hidden modal
-  setTimeout(() => {
-    window.modalMapInstance.invalidateSize();
-  }, 10);
-}
-
+          // Fix map rendering in hidden modal
+          setTimeout(() => {
+            window.modalMapInstance.invalidateSize();
+          }, 10);
+        }
       }
     });
   });
@@ -244,6 +323,10 @@ document.addEventListener("DOMContentLoaded", function () {
 // Fetch data on page load
 document.addEventListener("DOMContentLoaded", function () {
   fetchPropertyData();
+  // Start observing elements for scroll animations
+  setTimeout(() => {
+    observeElements();
+  }, 500);
 });
 ///////////
 
@@ -391,10 +474,9 @@ async function fetchSearchResults(query) {
   if (!query) return [];
 
   try {
-    // call or hit the API for search
-    // Correct fetch URL relative to index.html
-    const fetchURL = "search.php"; // or absolute: "/real_estate_dashboard/real-estate-landing-page/search.php"
-    const response = await fetch(`${fetchURL}?q=${encodeURIComponent(query)}`);
+    // const searchURL = `${base_url}/real_estate_dashboard/real-estate-landing-page/search.php`;
+
+    const response = await fetch(`${searchURL}?q=${encodeURIComponent(query)}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -443,74 +525,75 @@ searchInput.addEventListener("input", function () {
       item.innerHTML = `${title} - <span class="dropdown-location">${location}</span> (${type})`;
 
       // Open modal when clicked
-     // Open modal when clicked
-item.addEventListener("click", async () => {
-  const id = property.id; // very important
+      item.addEventListener("click", async () => {
+        const id = property.id; // very important
 
-  // Hit the API through ID when modal opens
-  const response = await fetch(
-    `${base_url}/real_estate_dashboard/admin/get-property-by-id.php?id=${id}`
-  );
+        // Hit the API through ID when modal opens
+        const response = await fetch(
+          // const getPropertyByIdURL = `${base_url}/real_estate_dashboard/admin/get-property-by-id.php`;
 
-  const full = await response.json();
+          `${getPropertyByIdURL}?id=${id}`
+        );
 
-  window.currentPropertyId = full.id;
+        const full = await response.json();
 
-  if (full.error) {
-    console.error(full.error);
-    return;
-  }
+        window.currentPropertyId = full.id;
 
-  // Populate modal using FULL data
-  document.getElementById("modalPropertyImage").src = full.thumbnail;
-  document.getElementById("modalPropertyTitle").textContent = full.title;
-  document.getElementById(
-    "modalPropertyType"
-  ).innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> ${full.property_type}`;
-  document.getElementById(
-    "modalPropertyLocation"
-  ).innerHTML = `<i class="fa-solid fa-location-dot"></i> ${full.location}`;
-  document.getElementById("modalPropertyDescription").textContent =
-    full.description;
-  document.getElementById("modalPropertyKeyFeatures").innerHTML =
-    full.content;
-  document.getElementById(
-    "modalcategory"
-  ).textContent = `${full.category} - Bedrooms`;
-  document.getElementById(
-    "modalBathrooms"
-  ).textContent = `${full.bathroom} - Bathrooms`;
-  document.getElementById("modalSize").textContent = `${full.area} sq ft`;
-  document.getElementById("modalPrice").textContent = `$${Number(
-    full.price
-  ).toLocaleString()}`;
+        if (full.error) {
+          console.error(full.error);
+          return;
+        }
 
+        // Populate modal using FULL data
+        document.getElementById("modalPropertyImage").src = full.thumbnail;
+        document.getElementById("modalPropertyTitle").textContent = full.title;
+        document.getElementById(
+          "modalPropertyType"
+        ).innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> ${full.property_type}`;
+        document.getElementById(
+          "modalPropertyLocation"
+        ).innerHTML = `<i class="fa-solid fa-location-dot"></i> ${full.location}`;
+        document.getElementById("modalPropertyDescription").textContent =
+          full.description;
+        document.getElementById("modalPropertyKeyFeatures").innerHTML =
+          full.content;
+        document.getElementById(
+          "modalcategory"
+        ).textContent = `${full.category} - Bedrooms`;
+        document.getElementById(
+          "modalBathrooms"
+        ).textContent = `${full.bathroom} - Bathrooms`;
+        document.getElementById("modalSize").textContent = `${full.area} sq ft`;
+        document.getElementById(
+          "modalCalender"
+        ).textContent = `${full.created_at}`;
+        document.getElementById("modalPrice").textContent = `$${Number(
+          full.price
+        ).toLocaleString()}`;
 
-  modal.style.display = "block";
+        modal.style.display = "block";
 
+        // Get coordinates
+        const lat = full.latitude;
+        const lng = full.longitude;
+        console.log("Latitude:", lat, "Longitude:", lng);
 
-  // Get coordinates
-  const lat = full.latitude;
-  const lng = full.longitude;
-  console.log("Latitude:", lat, "Longitude:", lng);
+        // Example: initialize map (if using Leaflet)
+        if (!isNaN(lat) && !isNaN(lng)) {
+          if (window.modalMapInstance) window.modalMapInstance.remove();
 
-  // Example: initialize map (if using Leaflet)
-  if (!isNaN(lat) && !isNaN(lng)) {
-    if (window.modalMapInstance) window.modalMapInstance.remove();
+          window.modalMapInstance = L.map("modalMap").setView([lat, lng], 15);
 
-    window.modalMapInstance = L.map("modalMap").setView([lat, lng], 15);
+          L.tileLayer(API_CONFIG.OPENSTREETMAP_TILE_URL, {
+            maxZoom: API_CONFIG.OPENSTREETMAP_MAX_ZOOM,
+          }).addTo(window.modalMapInstance);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-    }).addTo(window.modalMapInstance);
+          L.marker([lat, lng]).addTo(window.modalMapInstance);
+        }
 
-    L.marker([lat, lng]).addTo(window.modalMapInstance);
-  }
-
-  searchDropdown.style.display = "none";
-  searchInput.value = "";
-});
-
+        searchDropdown.style.display = "none";
+        searchInput.value = "";
+      });
 
       searchDropdown.appendChild(item);
     });
@@ -531,7 +614,6 @@ contactFormBtn.addEventListener("click", () => {
 
   window.location.href = `../real-estate-landing-page/contact.html?id=${window.currentPropertyId}`;
 });
-
 
 // Close dropdown when clicking outside
 document.addEventListener("click", (e) => {
@@ -563,7 +645,6 @@ searchInputField.addEventListener("input", () => {
   }, typingDelay);
 });
 
-
 // Show button again when clicking outside and field is empty
 searchInputField.addEventListener("blur", () => {
   if (searchInputField.value.trim() === "") {
@@ -575,12 +656,13 @@ searchInputField.addEventListener("blur", () => {
 
 async function fetchCounts() {
   try {
-    const response = await fetch("count-api.php");
+  //  const countURL = `${base_url}/real_estate_dashboard/real-estate-landing-page/count-api.php`;
+    const response = await fetch(countURL);
     const data = await response.json();
 
     updateCounter("propertyCount", data.total_properties);
     updateCounter("userCount", data.total_users);
-
+    updateCounter("userviewCount", data.total_usersview);
   } catch (error) {
     console.error("Error fetching counts:", error);
   }
@@ -594,11 +676,11 @@ setInterval(fetchCounts, 300000);
 
 ///////////////
 // js for the counter number animation //
-(function(){
+(function () {
   // ----------------------------
   // Utilities
   // ----------------------------
-  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
   function formatNumber(n, mode) {
     if (mode === "commas") return Number(n).toLocaleString();
     return String(n);
@@ -619,7 +701,7 @@ setInterval(fetchCounts, 300000);
     }
 
     let cancelled = false;
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const start = performance.now();
       function frame(now) {
         if (cancelled) return resolve();
@@ -635,7 +717,10 @@ setInterval(fetchCounts, 300000);
       requestAnimationFrame(frame);
 
       // return cancel function through el._cancelAnimation (if needed)
-      el._cancelAnimation = () => { cancelled = true; resolve(); };
+      el._cancelAnimation = () => {
+        cancelled = true;
+        resolve();
+      };
     });
   }
 
@@ -646,37 +731,54 @@ setInterval(fetchCounts, 300000);
   const elState = new WeakMap();
 
   function ensureState(el) {
-    if (!elState.has(el)) elState.set(el, { visible: false, pendingTarget: null, animating: false });
+    if (!elState.has(el))
+      elState.set(el, {
+        visible: false,
+        pendingTarget: null,
+        animating: false,
+      });
     return elState.get(el);
   }
 
   // ----------------------------
   // IntersectionObserver (scroll trigger)
   // ----------------------------
-  const observer = ("IntersectionObserver" in window) ? new IntersectionObserver((entries) => {
-    entries.forEach(async entry => {
-      const el = entry.target;
-      const state = ensureState(el);
+  const observer =
+    "IntersectionObserver" in window
+      ? new IntersectionObserver(
+          (entries) => {
+            entries.forEach(async (entry) => {
+              const el = entry.target;
+              const state = ensureState(el);
 
-      if (entry.isIntersecting) {
-        state.visible = true;
-        // If there's a pending target (update arrived earlier), animate from current to pending
-        const pending = state.pendingTarget;
-        if (pending !== null && !state.animating) {
-          state.animating = true;
-          const current = parseNumberFromText(el.textContent);
-          await animateCount(el, current, pending, Number(el.dataset.duration || 1200), el.dataset.format || "commas");
-          state.pendingTarget = null;
-          state.animating = false;
-        }
-        // After first visibility, unobserve so we don't repeatedly trigger
-        observer.unobserve(el);
-      }
-    });
-  }, { threshold: 0.35 }) : null;
+              if (entry.isIntersecting) {
+                state.visible = true;
+                // If there's a pending target (update arrived earlier), animate from current to pending
+                const pending = state.pendingTarget;
+                if (pending !== null && !state.animating) {
+                  state.animating = true;
+                  const current = parseNumberFromText(el.textContent);
+                  await animateCount(
+                    el,
+                    current,
+                    pending,
+                    Number(el.dataset.duration || 1200),
+                    el.dataset.format || "commas"
+                  );
+                  state.pendingTarget = null;
+                  state.animating = false;
+                }
+                // After first visibility, unobserve so we don't repeatedly trigger
+                observer.unobserve(el);
+              }
+            });
+          },
+          { threshold: 0.35 }
+        )
+      : null;
 
   // Observe all counters
-  document.querySelectorAll(".count").forEach(el => {
+  document.querySelectorAll(".count").forEach((el) => {
     ensureState(el); // init
     if (observer) observer.observe(el);
   });
@@ -685,7 +787,7 @@ setInterval(fetchCounts, 300000);
   // Public updateCounter function
   // ----------------------------
   // id: element id, newValue: numeric
-  window.updateCounter = async function(id, newValue) {
+  window.updateCounter = async function (id, newValue) {
     const el = document.getElementById(id);
     if (!el) return;
     const state = ensureState(el);
@@ -695,7 +797,9 @@ setInterval(fetchCounts, 300000);
 
     // If currently animating, cancel it (so we animate to new target)
     if (el._cancelAnimation) {
-      try { el._cancelAnimation(); } catch(e) {}
+      try {
+        el._cancelAnimation();
+      } catch (e) {}
       el._cancelAnimation = null;
       state.animating = false;
     }
@@ -722,17 +826,16 @@ setInterval(fetchCounts, 300000);
   // ----------------------------
   // Debug helper (optional)
   // ----------------------------
-  window.__counterDebug = function() {
-    document.querySelectorAll(".count").forEach(el => {
+  window.__counterDebug = function () {
+    document.querySelectorAll(".count").forEach((el) => {
       console.log(el.id, ensureState(el));
     });
   };
-
 })();
 
 /////////////
 
-// js for toast in landing page 
+// js for toast in landing page
 function showToastNotification(message, type = "info", duration = 2000) {
   Toastify({
     text: message,
@@ -751,36 +854,15 @@ function showToastNotification(message, type = "info", duration = 2000) {
   }).showToast();
 }
 
-
-
-// js for the map
-
-// const cardLat = parseFloat(property.latitude);
-// const cardLng = parseFloat(property.longitude);
-
-// if (!isNaN(cardLat) && !isNaN(cardLng)) {
-//   const cardMap = L.map(`cardMap-${key}`).setView([cardLat, cardLng], 15);
-//   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-//     maxZoom: 19,
-//   }).addTo(cardMap);
-//   L.marker([cardLat, cardLng])
-//     .addTo(cardMap)
-//     .bindPopup(`<b>${property.title}</b>`)
-//     .openPopup();
-// }
-
-///////////////
-
-
 //////
 // redirecting to contact page with property id //
 const contactFormButton = document.getElementById("contactBtn");
 // get property id from the modal or current property being viewed
 contactFormButton.addEventListener("click", function (e) {
-  const currentProperty = document.getElementById("modalPropertyTitle")
+  const currentProperty = document.getElementById("modalPropertyTitle");
   console.log("Current Property ID for Contact:", currentProperty);
   window.location.href = `../real-estate-landing-page/contact.html?id=${currentPropertyId}`;
-})
+});
 // Redirect to contact page with property ID
 contactFormButton.addEventListener("click", function () {
   if (!window.currentPropertyId) {
@@ -793,11 +875,10 @@ contactFormButton.addEventListener("click", function () {
 
 ////////////
 
-
 // Get property_id from URL: contact.html?property_id=123
 function getPropertyIdFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("property_id");
+  const params = new URLSearchParams(window.location.search);
+  return params.get("property_id");
 }
 
 const property_Id = getPropertyIdFromURL();
@@ -808,6 +889,5 @@ document.getElementById("property_id").value = property_Id;
 // Display property ID on page (optional)
 document.getElementById("property-id-display").innerText = property_Id;
 
-
-
-
+/////////////////////////
+/////////////////////

@@ -2,30 +2,48 @@
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "real_estate";
+include './db.php';
 
-$conn = new mysqli($host, $user, $pass, $dbname);
 
-if ($conn->connect_error) {
-    echo json_encode(["status" => "error", "message" => "Database connection failed"]);
-    exit();
-}
+/* ===== PAGINATION SETTINGS ===== */
+$limit = isset($_GET['limit'])
+    ? (int) $_GET['limit']
+    : 10;
 
-$sql = "SELECT id, fullname, email, phonenumber FROM leads ORDER BY id DESC";
-$result = $conn->query($sql);
+$page = isset($_GET['page']) && $_GET['page'] > 0 ? (int) $_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+/* ===== TOTAL RECORDS ===== */
+$countResult = $conn->query("SELECT COUNT(*) AS total FROM leads");
+$totalRecords = $countResult->fetch_assoc()['total'];
+$totalPages = ceil($totalRecords / $limit);
+
+/* ===== FETCH LEADS ===== */
+$stmt = $conn->prepare("
+    SELECT id, fullname, email, phonenumber
+    FROM leads
+    ORDER BY id DESC
+    LIMIT ? OFFSET ?
+");
+$stmt->bind_param("ii", $limit, $offset);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $inquiries = [];
 
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $inquiries[] = $row;
-    }
+while ($row = $result->fetch_assoc()) {
+    $inquiries[] = $row;
 }
 
-echo json_encode(["status" => "success", "data" => $inquiries]);
+/* ===== RESPONSE ===== */
+echo json_encode([
+    "status" => "success",
+    "data" => $inquiries,
+    "pagination" => [
+        "currentPage" => $page,
+        "totalPages" => $totalPages,
+        "totalRecords" => $totalRecords
+    ]
+]);
 
 $conn->close();
-?>

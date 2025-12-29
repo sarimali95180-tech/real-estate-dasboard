@@ -1,18 +1,29 @@
 <?php
-// require_once('./db.php');
-include './db.php';
+header('Content-Type: application/json');
+require './db.php';
+require './middleware/auth_middleware.php';
 
-$id = $_GET['id'];
+// 🔒 Only super admin can delete
+requireAdmin();
 
-$sql = "DELETE FROM users WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
+$id = (int)($_GET['id'] ?? 0);
 
-$response = [];
-if ($stmt->execute()) {
-    $response['success'] = true;
-} else {
-    $response['success'] = false;
+// Block deleting super admin
+$check = $conn->prepare("SELECT is_super_admin FROM users WHERE id=?");
+$check->bind_param("i", $id);
+$check->execute();
+$user = $check->get_result()->fetch_assoc();
+
+if ($user && $user['is_super_admin'] == 1) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Cannot delete Super Admin"
+    ]);
+    exit;
 }
-echo json_encode($response);
-?>
+
+$stmt = $conn->prepare("UPDATE users SET is_deleted=1 WHERE id=?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+
+echo json_encode(["success" => true]);

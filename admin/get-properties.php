@@ -1,42 +1,78 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
+
 include './db.php';
 
-// Base URL - Include /admin since uploads folder is inside admin
+// ===== PAGINATION SETTINGS =====
+$limit = isset($_GET['limit'])
+    ? (int) $_GET['limit']
+    : 10;
+
+$page = isset($_GET['page']) && $_GET['page'] > 0 ? (int) $_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Base URL
 $baseUrl = "http://localhost/real_estate_dashboard/admin";
 
-// Query to fetch all properties
-$sql = "SELECT id, title, description, category, area, bathroom, property_type, price, location, latitude, longitude, content, thumbnail FROM properties ORDER BY id DESC";
-$result = $conn->query($sql);
+// ===== COUNT TOTAL RECORDS =====
+$countSql = "
+    SELECT COUNT(*) AS total
+    FROM properties
+    WHERE is_deleted = 0
+";
 
+$countResult = $conn->query($countSql);
+$totalRecords = $countResult->fetch_assoc()['total'];
+$totalPages = ceil($totalRecords / $limit);
+
+// ===== FETCH PAGINATED DATA =====
+$sql = "SELECT id, title, description, category, area, created_at, bathroom,
+               property_type, price, location, latitude, longitude, content, thumbnail
+        FROM properties
+        WHERE is_deleted = 0
+        ORDER BY id DESC
+        LIMIT $limit OFFSET $offset";
+
+$result = $conn->query($sql);
 $properties = [];
 
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // Handle thumbnail: if it's a Cloudinary URL, use as-is; otherwise treat as local path
-        if (!empty($row['thumbnail'])) {
-            $thumbnailPath = $row['thumbnail'];
 
-            // If it's already a full URL (Cloudinary or external), keep it
-            if (strpos($thumbnailPath, 'http') === 0) {
-                $row['thumbnail'] = $thumbnailPath;
-            } else {
-                // Local path: ensure it starts with 'uploads/' and convert to full URL
-                if (strpos($thumbnailPath, 'uploads/') !== 0) {
-                    $thumbnailPath = 'uploads/' . $thumbnailPath;
+        // Thumbnail handling
+        if (!empty($row['thumbnail'])) {
+
+            // If NOT an external URL, treat as local file
+            if (strpos($row['thumbnail'], 'http') !== 0) {
+
+                if (strpos($row['thumbnail'], 'uploads/') !== 0) {
+                    $row['thumbnail'] = 'uploads/' . $row['thumbnail'];
                 }
-                $row['thumbnail'] = $baseUrl . '/' . $thumbnailPath;
+
+                $row['thumbnail'] = $baseUrl . '/' . $row['thumbnail'];
             }
+
         } else {
-            // Fallback placeholder
+            // Default image
             $row['thumbnail'] = $baseUrl . '/uploads/1.png';
         }
+
 
         $properties[] = $row;
     }
 }
 
-echo json_encode($properties, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+// ===== RESPONSE =====
+echo json_encode([
+    "success" => true,
+    "data" => $properties,
+    "pagination" => [
+        "currentPage" => $page,
+        "totalPages" => $totalPages,
+        "totalRecords" => $totalRecords,
+        "limit" => $limit
+    ]
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
 $conn->close();
-?>

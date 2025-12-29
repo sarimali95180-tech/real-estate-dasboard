@@ -38,7 +38,7 @@ if (!isset($_SESSION['page_token'])) {
             <h4>Real Estate</h4>
             <a href="./index.php"><img src="./images/Vector1.png">Users</a>
             <a href="./property.php"><img src="./images/Vector2.png">Add Properties</a>
-            <a href="./lead.html" class="active"><i class="fa-solid fa-circle-user"
+            <a href="./lead.php" class="active"><i class="fa-solid fa-circle-user"
                     style="padding-right:20px;"></i>Leads</a>
         </div>
         <div>
@@ -61,7 +61,7 @@ if (!isset($_SESSION['page_token'])) {
 
     <div class="main-content">
         <div class="wrap">
-
+            <h2 class="mb-4">Client Details</h2>
             <!-- Lead Info Section -->
             <header class="top-card">
 
@@ -92,25 +92,17 @@ if (!isset($_SESSION['page_token'])) {
                 <div class="info-block">
                     <div class="form-lebel">
                         <div class="meta-icon"><i class="fa-solid fa-dollar-sign"></i></div>
-                        <div class="meta-title">Budget Range:</div>
+                        <div class="meta-title">Budget:</div>
                     </div>
                     <div class="meta-text" id="budget">Loading...</div>
                 </div>
 
                 <div class="info-block">
                     <div class="form-lebel">
-                        <div class="meta-icon"><i class="fa-solid fa-city"></i></div>
-                        <div class="meta-title">City:</div>
+                        <div class="meta-icon"><i class="fa-solid fa-clock"></i></div>
+                        <div class="meta-title">Best Time to Contact:</div>
                     </div>
-                    <div class="meta-text" id="city">Loading...</div>
-                </div>
-
-                <div class="info-block">
-                    <div class="form-lebel">
-                        <div class="meta-icon"><i class="fa-solid fa-building"></i></div>
-                        <div class="meta-title">Preferred Property Type:</div>
-                    </div>
-                    <div class="meta-text" id="property_type">Loading...</div>
+                    <div class="meta-text" id="contact_time">Loading...</div>
                 </div>
 
                 <div class="info-block">
@@ -123,31 +115,17 @@ if (!isset($_SESSION['page_token'])) {
 
                 <div class="info-block">
                     <div class="form-lebel">
-                        <div class="meta-icon"><i class="fa-solid fa-map"></i></div>
-                        <div class="meta-title">Preferred Location:</div>
-                    </div>
-                    <div class="meta-text" id="location">Loading...</div>
-                </div>
-
-                <div class="info-block">
-                    <div class="form-lebel">
                         <div class="meta-icon"><i class="fa-solid fa-message"></i></div>
                         <div class="meta-title">Message:</div>
                     </div>
                     <div class="meta-text" id="message">Loading...</div>
                 </div>
 
-                <div class="info-block">
-                    <div class="form-lebel">
-                        <div class="meta-icon"><i class="fa-solid fa-clock"></i></div>
-                        <div class="meta-title">Best Time to Contact:</div>
-                    </div>
-                    <div class="meta-text" id="contact_time">Loading...</div>
-                </div>
-
             </header>
 
             <!-- Property Section -->
+
+            <h2 class="mb-3 mt-5">Property Details</h2>
             <section class="main">
                 <div class="image-card">
                     <img id="thumbnail" src="./images/Rectangle 672.png" alt="Property">
@@ -192,10 +170,18 @@ if (!isset($_SESSION['page_token'])) {
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-icon">📐</div>
+                            <div class="stat-icon"><i class="fa-solid fa-ruler"></i></div>
                             <div class="stat-body">
                                 <div class="muted">Area</div>
                                 <div class="stat-num" id="area">0 sq ft</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-regular fa-calendar"></i></div>
+                            <div class="stat-body">
+                                <div class="muted">Calender</div>
+                                <div class="stat-num" id="calender">00-00-0000</div>
                             </div>
                         </div>
                     </div>
@@ -214,20 +200,20 @@ if (!isset($_SESSION['page_token'])) {
     <!------------ JS TO LOAD DATA ------------>
 
     <script>
-      function escapeHtml(text) {
-    if (text === null || text === undefined) return "";
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return "";
 
-    // Convert non-string values (numbers, objects) to string
-    if (typeof text !== "string") text = String(text);
+            // Convert non-string values (numbers, objects) to string
+            if (typeof text !== "string") text = String(text);
 
-    return text.replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    }[m]));
-}
+            return text.replace(/[&<>"']/g, (m) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[m]));
+        }
 
 
         async function loadLead() {
@@ -258,38 +244,37 @@ if (!isset($_SESSION['page_token'])) {
                 document.getElementById("fullname").innerText = escapeHtml(lead.fullname);
                 document.getElementById("email").innerText = escapeHtml(lead.email);
                 document.getElementById("phone").innerText = escapeHtml(lead.phonenumber);
-                document.getElementById("budget").innerText = escapeHtml(lead.budget);
-                document.getElementById("city").innerText = escapeHtml(lead.city);
-                document.getElementById("property_type").innerText = escapeHtml(lead.property_type);
+                document.getElementById("budget").innerText = `$${escapeHtml(lead.budget)}`;
                 document.getElementById("purpose").innerText = escapeHtml(lead.purpose);
-                document.getElementById("location").innerText = escapeHtml(lead.location);
                 document.getElementById("message").innerText = escapeHtml(lead.message);
                 document.getElementById("contact_time").innerText = escapeHtml(lead.contact_time);
 
                 // ---- Fill Property Data ----
-                document.getElementById("title").innerText =escapeHtml(property.title || "N/A");
+                document.getElementById("title").innerText = escapeHtml(property.title || "N/A");
 
-                document.getElementById("price").innerText =`$${property.price || 0}`;
+                document.getElementById("price").innerText = `$${property.price || 0}`;
 
-                document.getElementById("pproperty_type").innerText =escapeHtml(property.property_type || "N/A");
+                document.getElementById("pproperty_type").innerText = escapeHtml(property.property_type || "N/A");
 
-                document.getElementById("property_location").innerText =escapeHtml(property.location || "N/A");
+                document.getElementById("property_location").innerText = escapeHtml(property.location || "N/A");
 
-                document.getElementById("category").innerText =escapeHtml(property.category || "0");
+                document.getElementById("category").innerText = escapeHtml(property.category || "0");
 
-document.getElementById("bathroom").innerText =
-    escapeHtml(property.bathroom || property.bathrooms || "0");
+                document.getElementById("bathroom").innerText =
+                    escapeHtml(property.bathroom || property.bathrooms || "0");
 
-                document.getElementById("area").innerText =
-    escapeHtml((property.area || "0") + " sq ft");
+                document.getElementById("area").innerText = escapeHtml((property.area || "0") + " sq ft");
+
+                document.getElementById("calender").innerText =
+                    escapeHtml((property.created_at || "0"));
 
 
-                document.getElementById("description").innerText =escapeHtml(property.description || "No description available.");
+                document.getElementById("description").innerText = escapeHtml(property.description || "No description available.");
 
 
                 if (property.thumbnail) {
-                     document.getElementById("thumbnail").src = property.thumbnail;
-                    }
+                    document.getElementById("thumbnail").src = property.thumbnail;
+                }
 
 
 

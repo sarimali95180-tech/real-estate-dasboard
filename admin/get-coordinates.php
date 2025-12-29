@@ -2,6 +2,7 @@
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 include './db.php';
+include '../config/const-auth.php';
 
 // Check if 'location' parameter is provided
 if (!isset($_GET['location']) || empty($_GET['location'])) {
@@ -13,8 +14,7 @@ if (!isset($_GET['location']) || empty($_GET['location'])) {
 }
 
 $location = urlencode($_GET['location']);
-$apiKey = "0eff5672f554429fa0d2ade011ab5163"; // Your Geoapify API key
-$geoapifyUrl = "https://api.geoapify.com/v1/geocode/search?text={$location}&apiKey={$apiKey}&limit=5"; // limit suggestions
+$geoapifyUrl = GEOAPIFY_API_URL . "?text={$location}&apiKey=" . GEOAPIFY_API_KEY . "&limit=" . GEOAPIFY_SUGGESTIONS_LIMIT;
 
 // Fetch data from Geoapify
 $response = file_get_contents($geoapifyUrl);

@@ -1,14 +1,18 @@
 <?php
 header('Content-Type: application/json');
-session_start();
+// session_start();
 include './db.php';
 include '../config/const-auth.php';
+require './middleware/auth_middleware.php';
+
+// only Admin or Super Admin
+requireAdmin();
 
 /* ---------- AUTH CHECK ---------- */
 if (!isset($_SESSION['user_id'])) {
     echo json_encode([
         "success" => false,
-        "message" => "Unauthorized access"
+        "message" => "Unauthorized"
     ]);
     exit;
 }
@@ -28,7 +32,13 @@ $conn->begin_transaction();
 
 try {
 
-    /* ---------- INPUTS ---------- */
+    /* ---------- REQUIRED ID ---------- */
+    $id = (int) ($_POST['id'] ?? 0);
+    if ($id <= 0) {
+        throw new Exception("Property ID is required");
+    }
+
+    /* ---------- INPUT DATA ---------- */
     $title = $_POST['title'] ?? '';
     $description = $_POST['description'] ?? '';
     $category = $_POST['category'] ?? '';
@@ -40,20 +50,32 @@ try {
     $content = $_POST['content'] ?? '';
     $thumbnailUrl = $_POST['thumbnail_url'] ?? '';
 
-    /* ---------- IMAGE UPLOAD ---------- */
-    if (empty($thumbnailUrl) && isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === 0) {
+    /* ---------- FETCH OLD IMAGE (OWNER CHECK) ---------- */
+    $oldImage = null;
 
-        $uploadDir = 'uploads/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
+    $imgStmt = $conn->prepare(
+        "SELECT thumbnail 
+         FROM properties 
+         WHERE id = ? AND user_id = ?"
+    );
+    $imgStmt->bind_param("ii", $id, $user_id);
+    $imgStmt->execute();
+    $imgStmt->bind_result($oldImage);
+    $imgStmt->fetch();
+    $imgStmt->close();
 
-        $ext = pathinfo($_FILES['thumbnail']['name'], PATHINFO_EXTENSION);
-        $thumbnailUrl = $uploadDir . time() . '_' . rand(1000, 9999) . '.' . $ext;
+    /* 🔥 BLOCK UNAUTHORIZED USER */
+    if ($oldImage === null) {
+        throw new Exception("You are not allowed to edit this property");
+    }
 
-        if (!move_uploaded_file($_FILES['thumbnail']['tmp_name'], $thumbnailUrl)) {
-            throw new Exception("Thumbnail upload failed");
-        }
+    /* ---------- THUMBNAIL LOGIC ---------- */
+    if (!empty($thumbnailUrl)) {
+        // new thumbnail (cloudinary or url)
+        $finalThumbnail = $thumbnailUrl;
+    } else {
+        // keep old thumbnail
+        $finalThumbnail = $oldImage;
     }
 
     /* ---------- GEOCODING ---------- */
@@ -73,11 +95,22 @@ try {
         }
     }
 
-    /* ---------- DATABASE INSERT ---------- */
+    /* ---------- UPDATE QUERY ---------- */
     $stmt = $conn->prepare(
-        "INSERT INTO properties 
-        (title, description, category, user_id, area, bathroom, property_type, price, location, content, thumbnail, latitude, longitude)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "UPDATE properties SET
+            title = ?, 
+            description = ?, 
+            category = ?, 
+            area = ?, 
+            bathroom = ?,
+            property_type = ?, 
+            price = ?, 
+            location = ?, 
+            content = ?, 
+            thumbnail = ?,
+            latitude = ?, 
+            longitude = ?
+         WHERE id = ? AND user_id = ?"
     );
 
     if (!$stmt) {
@@ -85,36 +118,35 @@ try {
     }
 
     $stmt->bind_param(
-        "sssiiisisssdd",
+        "ssiiisisssddii",
         $title,
         $description,
         $category,
-        $user_id,
         $area,
         $bathroom,
         $property_type,
         $price,
         $location,
         $content,
-        $thumbnailUrl,
+        $finalThumbnail,
         $latitude,
-        $longitude
+        $longitude,
+        $id,
+        $user_id
     );
 
     if (!$stmt->execute()) {
         throw new Exception($stmt->error);
     }
 
-    $insertId = $stmt->insert_id;
-
     /* ---------- COMMIT ---------- */
     $conn->commit();
 
     echo json_encode([
         "success" => true,
-        "message" => "Property added successfully",
-        "id" => $insertId,
-        "thumbnail" => $thumbnailUrl,
+        "message" => "Property updated successfully",
+        "id" => $id,
+        "thumbnail" => $finalThumbnail,
         "latitude" => $latitude,
         "longitude" => $longitude
     ]);
@@ -123,10 +155,6 @@ try {
 
     /* ---------- ROLLBACK ---------- */
     $conn->rollback();
-
-    if (!empty($thumbnailUrl) && file_exists($thumbnailUrl)) {
-        unlink($thumbnailUrl);
-    }
 
     echo json_encode([
         "success" => false,

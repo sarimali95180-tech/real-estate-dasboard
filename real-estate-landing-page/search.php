@@ -13,9 +13,10 @@ if ($search === '') {
 
 // Prepared statement to prevent SQL injection
 $stmt = $conn->prepare("
-    SELECT id, title, location, property_type, description 
-    FROM properties 
-    WHERE title LIKE ? OR location LIKE ? OR property_type LIKE ?
+    SELECT id, title, location, property_type, description
+    FROM properties
+    WHERE is_deleted = 0
+      AND (title LIKE ? OR location LIKE ? OR property_type LIKE ?)
 ");
 
 $like = "%$search%";

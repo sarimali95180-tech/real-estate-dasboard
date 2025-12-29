@@ -72,12 +72,14 @@
                         <p>Users Listed</p>
                     </div>
 
+                    <div class="block-1">
+                        <h1 id="userviewCount" class="count" data-start="0" data-end="750" data-duration="1500"
+                            data-format="commas">
+                            0
+                        </h1>
+                        <p>Users Visited</p>
+                    </div>
 
-
-                    <!-- <div class="block-1">
-                    <h1>15+</h1>
-                    <p>Years Experience</p>
-                </div> -->
                 </div>
 
             </div>
@@ -289,7 +291,7 @@
                     </div>
                     <div class="find-btn-1">
                         <button><img src="./images/mail.png" alt="mail"> Email Us</button>
-                        <p><img src="./images/mail.png" alt="mail"> contact@realestate.com</p>
+                        <p><i class="fa-regular fa-envelope"></i> contact@realestate.com</p>
                     </div>
                 </div>
             </div>
@@ -330,6 +332,10 @@
                             <div class="info-item">
                                 <i class="fa-solid fa-ruler"></i>
                                 <span id="modalSize"></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa-regular fa-calendar"></i>
+                                <span id="modalCalender"></span>
                             </div>
 
                         </div>
@@ -408,15 +414,10 @@
 
     </div>
 
+    <script src="./api-config.js"></script>
     <script src="./js/script.js"></script>
+    <!-- <script src="../admin/script.js"></script> -->
 
-    <!-- <script>
-        document.querySelectorAll(".contact-btn").forEach(btn => {
-            let id = btn.getAttribute("data-id");
-            btn.href = `contact.html?id=${id}`;
-        });
-
-    </script> -->
 
 </body>
 

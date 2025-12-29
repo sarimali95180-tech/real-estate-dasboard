@@ -1,130 +1,537 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Number Counting Animation</title>
-<style>
-  :root{
-    --bg:#0f1724;
-    --card:#0b1220;
-    --accent: #7dd3fc;
-    --muted:#9aa5b1;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-  body{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:linear-gradient(180deg,var(--bg),#071023);
-    color:#e6eef6;
-    padding:40px;
-    box-sizing:border-box;
-  }
-  .card{
-    background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
-    padding:28px;
-    border-radius:16px;
-    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
-    min-width:320px;
-    text-align:center;
-  }
-  .label{font-size:13px;color:var(--muted);margin-bottom:8px}
-  .count{
-    font-weight:700;
-    font-size:48px;
-    letter-spacing: -0.02em;
-    display:inline-block;
-    padding:8px 14px;
-    border-radius:10px;
-    background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(125,211,252,0.02));
-    color: white;
-    min-width:160px;
-  }
-  .meta{margin-top:12px;color:var(--muted);font-size:13px}
-  /* small responsive */
-  @media (max-width:420px){
-    .count{font-size:36px;min-width:120px}
-  }
-</style>
+    <meta charset="UTF-8" />
+    <title>Database Call Analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- font Awsom  -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --card: #111827;
+            --border: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --green: #22c55e;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: Inter, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* HEADER */
+        .header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        /* GRID */
+        .container {
+            padding: 20px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: auto auto auto auto auto auto;
+            gap: 9px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .card h4 {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0 0 8px;
+        }
+
+        .card .value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .green {
+            color: var(--green);
+        }
+
+        .yellow {
+            color: var(--yellow);
+        }
+
+        .blue {
+            color: var(--blue);
+        }
+
+        /* PANELS */
+        .panels {
+            /* margin-top: 20px; */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .panel h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* BAR CHART */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 220px;
+            gap: 4px;
+        }
+
+        .bar {
+            width: 10px;
+            background: linear-gradient(to top,
+                    var(--green) 0%,
+                    var(--green) 10%,
+                    var(--yellow) 10%,
+                    var(--yellow) 40%,
+                    var(--blue) 40%,
+                    var(--blue) 70%,
+                    var(--orange) 70%,
+                    var(--orange) 100%);
+        }
+
+        /* DONUT */
+        .donut-wrap {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .donut {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(var(--blue) 0% 40%,
+                    var(--orange) 40% 60%,
+                    var(--purple) 60% 80%,
+                    var(--yellow) 80% 100%);
+            position: relative;
+        }
+
+        .donut::after {
+            content: "";
+            position: absolute;
+            inset: 40px;
+            background: var(--card);
+            border-radius: 50%;
+        }
+
+        .donut h6{
+            position: absolute;
+            left:32px ;
+            font-size: 10px;
+            text-align: center;
+            color: var(--text);
+        }
+        .donut h5{
+            position: absolute;
+            top: 55px;
+            right: -13px;
+            font-size: 10px;
+            text-align: center;
+            color: var(--text);
+        }
+        .donut h4{
+            position: absolute;
+            left: -5px;
+            bottom: 45px;
+            font-size: 10px;
+            text-align: center;
+            color: var(--text);
+        }
+        .donut h3{
+            position: absolute;
+            left: 67px;
+            bottom: 0px;
+            font-size: 10px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .legend {
+            font-size: 13px;
+        }
+
+        .legend div {
+            margin-bottom: 6px;
+        }
+
+        .main-container {
+            margin-left: 250px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            position: fixed;
+            height: 100%;
+            background: linear-gradient(180deg, #111827);
+            color: #cbd5e1;
+            padding: 20px;
+        }
+
+        /* LOGO */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+
+        .logo img {
+            width: 26px;
+        }
+
+        .logo span {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f97316;
+        }
+
+        /* MENU */
+        .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu li {
+            margin-bottom: 4px;
+        }
+
+        .menu a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0px;
+            border-radius: 6px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .menu a:hover {
+            background: #1f2937;
+        }
+
+        .menu a.active {
+            background: #1f2937;
+        }
+
+        /* LEFT ICON */
+        .menu .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu i {
+            width: 16px;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        /* ARROW */
+        .arrow {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .panels {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* TOP BAR */
+        .topbar {
+            margin-left: 240px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: #0f1720;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        .topbar input {
+            background: #020617;
+            border: 1px solid #1f2937;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+
+        .topbar button {
+            background: #020617;
+            color: #fff;
+            border: 1px solid #1f2937;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-left: 6px;
+            cursor: pointer;
+        }
+
+        .topbar .primary {
+            background: #2563eb;
+            border: none;
+        }
+    </style>
 </head>
+
 <body>
-<div class="block-1">
-    <h1 id="propertyCount"
-        class="count"
-        data-start="0"
-        data-end="2500"
-        data-duration="1500"
-        data-format="commas">
-        0
-    </h1>
-    <p>Properties Listed</p>
-</div>
 
-<div class="block-1">
-    <h1 id="userCount"
-        class="count"
-        data-start="0"
-        data-end="750"
-        data-duration="1500"
-        data-format="commas">
-        0
-    </h1>
-    <p>Users Listed</p>
-</div>
+    <!-- Sidebar content can go here -->
 
+    <!-- SIDEBAR -->
+    <div class="sidebar">
 
-<script>
-(function(){
-  const easing = {
-    linear: t => t,
-    easeOutCubic: t => 1 - Math.pow(1 - t, 3),
-  };
+        <!-- LOGO -->
+        <div class="logo">
+            <!-- <img src="https://grafana.com/static/assets/img/grafana_icon.svg" alt="Grafana"> -->
+            <span>Grafana</span>
+        </div>
 
-  function formatNumber(n, mode) {
-    return mode === 'commas' ? n.toLocaleString() : String(n);
-  }
+        <!-- MENU -->
+        <ul class="menu">
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-solid fa-house"></i> Home
+                    </div>
+                </a>
+            </li>
 
-  function animateCount(el, opts = {}) {
-    const start = Number(opts.start || 0);
-    const end = Number(opts.end || 0);
-    const duration = Number(opts.duration || 1000);
-    const fmt = opts.format || "plain";
-    const ease = easing[opts.easing] || easing.easeOutCubic;
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-regular fa-bookmark"></i> Bookmarks
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </a>
+            </li>
 
-    const startTime = performance.now();
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-regular fa-star"></i> Starred
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </a>
+            </li>
 
-    function frame(now) {
-      const progress = Math.min(1, (now - startTime) / duration);
-      const value = start + (end - start) * ease(progress);
-      el.textContent = formatNumber(Math.round(value), fmt);
+            <li>
+                <a href="#" class="active">
+                    <div class="left">
+                        <i class="fa-solid fa-table-cells-large"></i> Dashboards
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </a>
+            </li>
 
-      if (progress < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        el.textContent = formatNumber(end, fmt);
-      }
-    }
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-solid fa-compass"></i> Explore
+                    </div>
+                </a>
+            </li>
 
-    requestAnimationFrame(frame);
-  }
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-solid fa-diagram-project"></i> Drilldown
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </a>
+            </li>
 
-  function initCounters() {
-    document.querySelectorAll('.count').forEach(el => {
-      animateCount(el, {
-        start: el.dataset.start,
-        end: el.dataset.end,
-        duration: el.dataset.duration,
-        format: el.dataset.format,
-        easing: el.dataset.easing
-      });
-    });
-  }
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-solid fa-bell"></i> Alerting
+                    </div>
+                </a>
+            </li>
 
-  // Start animation when page loads
-  window.addEventListener("DOMContentLoaded", initCounters);
-})();
-</script>
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-solid fa-share-nodes"></i> Connections
+                    </div>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <div class="left">
+                        <i class="fa-solid fa-gear"></i> Administration
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </a>
+            </li>
+        </ul>
+
+    </div>
+
+    
+    <div class="header topbar">
+        Home › Dashboards › AI Voice Agent › Database Call Analytics
+    </div>
+    <div class="topbar">
+        <div>
+            <input placeholder="Search... (Ctrl + K)">
+        </div>
+        <div>
+            <button><i class="fa fa-clock"></i> Last 5 minutes</button>
+            <button><i class="fa fa-rotate"></i> Refresh</button>
+            <button>Export</button>
+            <button class="primary">Share</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="container">
+            <div class="card" style="padding: 4px 0px 16px 4px;">
+                <h2 style="margin: 0;"> 📊 DataBase Call Analytics</h2>
+            </div>
+            <!-- TOP CARDS -->
+            <div class="cards">
+                <div class="card">
+                    <h4>Total Calls in Database</h4>
+                    <h3>Total Calls</h3>
+                    <div class="value green">5</div>
+                </div>
+
+                <div class="card">
+                    <h4>Calls (Last 24 Hours)</h4>
+                    <h3>Last 24h</h3>
+                    <div class="value yellow">5</div>
+                </div>
+
+                <div class="card">
+                    <h4>Calls (Last Hour)</h4>
+                    <h3>Last Hour</h3>
+                    <div class="value blue">0</div>
+                </div>
+
+                <div class="card">
+                    <h4>Unique Caller Numbers</h4>
+                    <h3>Unique Callers</h3>
+                    <div class="value blue">1</div>
+                </div>
+
+                <div class="card">
+                    <h4>Average Call Duration</h4>
+                    <h3>Avg Duration</h3>
+                    <div class="value green">1.05 h</div>
+                </div>
+
+                <div class="card">
+                    <h4>Total Call Time (Hours)</h4>
+                    <h3>Total Hours</h3>
+                    <div class="value">5.26 s</div>
+                </div>
+            </div>
+
+            <!-- CHARTS -->
+            <div class="panels">
+
+                <!-- BAR CHART -->
+                <div class="panel">
+                    <h3>Calls by Disposition (All Time)</h3>
+                    <div class="bar-chart">
+                        <!-- fake bars -->
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:90%"></div>
+                    </div>
+                </div>
+
+                <!-- DONUT -->
+                <div class="panel">
+                    <h3>Disposition Distribution (%)</h3>
+                    <div class="donut-wrap">
+                        <div class="donut">
+                           <h6>transfered <br> 20%</h6>
+                           <h5>no_answer <br> 40%</h5>
+                           <h4>qualified <br> 20%</h4>
+                           <h3>not_interested <br> 20%</h3>
+                        </div>
+                        <div class="legend">
+                            <div>🔵 no_answer — 40%</div>
+                            <div>🟠 un_interested — 20%</div>
+                            <div>🟣 qualified — 20%</div>
+                            <div>🟡 information_requested — 20%</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </body>
+
 </html>

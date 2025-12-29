@@ -1,13 +1,3 @@
-<?php
-session_start();
-
-// Check if user is already logged in via session
-if (isset($_SESSION['username'])) {
-    header("Location: index.php");
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -36,7 +26,8 @@ if (isset($_SESSION['username'])) {
             <p class="text-muted mb-0">Access your property dashboard</p>
         </div>
 
-        <form id="loginForm" method="POST" action="login_process.php">
+        <form id="loginForm">
+
             <div class="mb-3">
                 <label for="username" class="form-label fw-semibold">Username</label>
                 <input type="text" class="form-control" name="username" id="username" placeholder="Enter username"
@@ -47,11 +38,11 @@ if (isset($_SESSION['username'])) {
                 <label for="password" class="form-label fw-semibold">Password</label>
                 <input type="password" class="form-control" name="password" id="password" placeholder="Enter password"
                     required>
-               
+
 
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 fw-semibold">Login</button>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
 
         <p class="text-center text-muted mt-3 mb-0">
@@ -84,11 +75,13 @@ if (isset($_SESSION['username'])) {
                 backgroundColor: "#28a745",
                 close: true,
             }).showToast();
-            
+
             // Remove logout parameter from URL to prevent showing toast on refresh
             window.history.replaceState({}, document.title, window.location.pathname);
         <?php endif; ?>
     </script>
+
+    <script src="./login-script.js"></script>
 </body>
 
 </html>

@@ -1,6 +1,10 @@
 <?php
 header('Content-Type: application/json');
 include './db.php';
+require './middleware/auth_middleware.php';
+
+// Admin or Super Admin only
+requireAdmin();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id <= 0) {
@@ -8,29 +12,17 @@ if ($id <= 0) {
     exit;
 }
 
-// fetch thumbnail path to remove file
-$stmt = $conn->prepare('SELECT thumbnail FROM properties WHERE id = ?');
+// Soft delete (do NOT delete file)
+$stmt = $conn->prepare(
+    "UPDATE properties SET is_deleted = 1 WHERE id = ?"
+);
 $stmt->bind_param('i', $id);
-$stmt->execute();
-$res = $stmt->get_result();
-$thumb = '';
-if ($res && $row = $res->fetch_assoc()) {
-    $thumb = $row['thumbnail'];
-}
-$stmt->close();
 
-// delete record
-$stmt2 = $conn->prepare('DELETE FROM properties WHERE id = ?');
-$stmt2->bind_param('i', $id);
-if ($stmt2->execute()) {
-    // remove file if exists and path is not empty
-    if (!empty($thumb) && file_exists($thumb)) {
-        @unlink($thumb);
-    }
+if ($stmt->execute()) {
     echo json_encode(['success' => true]);
 } else {
-    echo json_encode(['success' => false, 'message' => $stmt2->error]);
+    echo json_encode(['success' => false, 'message' => 'Delete failed']);
 }
-$stmt2->close();
+
+$stmt->close();
 $conn->close();
-?>

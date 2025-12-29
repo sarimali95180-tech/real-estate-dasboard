@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: *");
-include "./db.php"; 
+include "./db.php";
 
 $baseUrl = "http://localhost/real_estate_dashboard/admin";
 
@@ -15,9 +15,9 @@ $id = intval($_GET["id"]);
 
 // Fetch single property
 $stmt = $conn->prepare("
-    SELECT id, title, description, category, area, bathroom, property_type, price, location, latitude, longitude, content, thumbnail 
+    SELECT id, title, description, category, area, created_at, bathroom, property_type, price, location, latitude, longitude, content, thumbnail 
     FROM properties
-    WHERE id = ?
+    WHERE id = ? AND is_deleted = 0
 ");
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -43,8 +43,8 @@ if (!empty($property['thumbnail'])) {
 }
 
 // Ensure latitude and longitude are floats
-$property['latitude'] = isset($property['latitude']) ? (float)$property['latitude'] : null;
-$property['longitude'] = isset($property['longitude']) ? (float)$property['longitude'] : null;
+$property['latitude'] = isset($property['latitude']) ? (float) $property['latitude'] : null;
+$property['longitude'] = isset($property['longitude']) ? (float) $property['longitude'] : null;
 
 echo json_encode($property, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 $conn->close();

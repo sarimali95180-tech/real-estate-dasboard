@@ -1,51 +1,78 @@
 <?php
+header('Content-Type: application/json');
 include './db.php';
 
-
+// Read JSON input
 $data = json_decode(file_get_contents("php://input"), true);
 
-$fullname = $data['fullname'];
-$username = $data['username'];
-$email = $data['email'];
+// Validate required fields
+$required = ['fullname', 'username', 'email', 'password', 'role', 'status'];
+foreach ($required as $field) {
+    if (empty($data[$field])) {
+        echo json_encode([
+            "success" => false,
+            "message" => "$field is required"
+        ]);
+        exit;
+    }
+}
+
+$fullname = trim($data['fullname']);
+$username = trim($data['username']);
+$email = trim($data['email']);
 $password = password_hash($data['password'], PASSWORD_DEFAULT);
+$role = $data['role'];
 $status = $data['status'];
-// 
 
-// 
-$response = [];
-
-$checkExistance = $conn->prepare("SELECT * FROM users WHERE email = ?");
-
-// Bind the email parameter
-$checkExistance->bind_param("s", $email);
-
-// execute query
-$checkExistance->execute();
-
-// Get the result
-$result = $checkExistance->get_result();
-
-
-// Check if any row exists
-if ($result->num_rows > 0) {
-    $response['success'] = false;
-    $response['message'] = 'A user with this email already existed';
-    echo json_encode($response);
+// Role based access control
+if (!in_array($role, ['admin', 'agent'])) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Invalid role"
+    ]);
     exit;
 }
 
+// Check email existence
+$check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+$check->bind_param("s", $email);
+$check->execute();
+$result = $check->get_result();
 
-$stmt = $conn->prepare("INSERT INTO users (fullname, username, email, password, status) VALUES (?, ?, ?, ?, ?)");
-$stmt->bind_param("sssss", $fullname, $username, $email, $password, $status);
-
-if ($stmt->execute()) {
-    $response['success'] = true;
-    $response['message'] = "User added successfully";
-    $response['id'] = $conn->insert_id;
-} else {
-    $response['success'] = false;
-    $response['message'] = "Error: " . $stmt->error;
+if ($result->num_rows > 0) {
+    echo json_encode([
+        "success" => false,
+        "message" => "A user with this email already exists"
+    ]);
+    exit;
 }
 
-echo json_encode($response);
+// Insert user
+$stmt = $conn->prepare(
+    "INSERT INTO users (fullname, role, username, email, password, status)
+     VALUES (?, ?, ?, ?, ?, ?)"
+);
+
+$stmt->bind_param(
+    "ssssss",
+    $fullname,
+    $role,
+    $username,
+    $email,
+    $password,
+    $status
+);
+
+if ($stmt->execute()) {
+    echo json_encode([
+        "success" => true,
+        "message" => "User added successfully",
+        "id" => $conn->insert_id
+    ]);
+} else {
+    echo json_encode([
+        "success" => false,
+        "message" => $stmt->error
+    ]);
+}
 ?>
